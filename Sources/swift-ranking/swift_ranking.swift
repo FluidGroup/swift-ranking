@@ -24,20 +24,32 @@ public enum Ranking {
   } 
   
   public static func remove<
-    E: Rankable
+    Collection: RandomAccessCollection & RangeReplaceableCollection & MutableCollection
   >(  
-    at index: Array<E>.Index,
-    in collection: inout Array<E>
-  ) {
+    at index: Collection.Index,
+    in collection: inout Collection
+  ) -> Collection.Element where Collection.Element : Rankable, Collection.Index == Int {
     
-    var sorted = collection.sorted { $0.rank < $1.rank }
+    collection.sort { $0.rank < $1.rank }
     
-    uncheckedRemove(
+    return uncheckedRemove(
       at: index,
-      in: &sorted
+      in: &collection
     )
+  
+  }
+  
+  public static func uncheckedMove<
+    Collection: RangeReplaceableCollection & MutableCollection
+  >(
+    from fromIndex: Collection.Index,
+    to toIndex: Collection.Index,
+    in collection: inout Collection
+  ) where Collection.Index == Int, Collection.Element : Rankable {
     
-    collection = sorted
+    let element = uncheckedRemove(at: fromIndex, in: &collection)
+    uncheckedInsert(element: element, at: toIndex, in: &collection)
+    
   }
   
   public static func uncheckedInsert<
@@ -59,6 +71,7 @@ public enum Ranking {
     }
     
     guard from < to else {
+      collection.insert(element, at: index)
       rank_balancing(collection: &collection)
       return
     }
@@ -75,8 +88,8 @@ public enum Ranking {
   >(
     at index: Collection.Index,
     in collection: inout Collection
-  ) where Collection.Index == Int, Collection.Element : Rankable {  
-    collection.remove(at: index)  
+  ) -> Collection.Element where Collection.Index == Int, Collection.Element : Rankable {  
+    return collection.remove(at: index)  
   } 
   
   public static func rank_balancing<Collection: MutableCollection>(collection: inout Collection) where Collection.Element: Rankable, Collection.Index == Int {
@@ -104,61 +117,6 @@ public enum Ranking {
     }
   }
 }
-
-#if DEBUG
-
-private struct Item: Rankable, Identifiable {
-  
-  var id: String
-  var rank: Int
-  
-}
-
-private struct Book: View {
-  
-  @State var items: [Item] = []
-  
-  var body: some View {
-    
-    VStack {
-      List {
-        ForEach(Array(items.sorted(by: { $0.rank < $1.rank })), id: \.id) { item in
-          HStack {
-            Text("\(item.rank)")
-            Text(item.id)          
-          }
-        }
-      }
-      Button("Add") {
-        Ranking.insert(element: .init(id: UUID().uuidString, rank: 0), at: 0, in: &items)
-      }
-    }
-    .onAppear {
-      
-      var items: [Item] = [
-        .init(id: UUID().uuidString, rank: 0),
-        .init(id: UUID().uuidString, rank: 4),
-        .init(id: UUID().uuidString, rank: 6),
-        .init(id: UUID().uuidString, rank: 10),
-      ]
-            
-//      rank_balancing(collection: &items)
-      
-      print(Int.min)
-      print(items)
-      
-    }
-    
-  }
-  
-}
-
-import SwiftUI
-@available(iOS 17, *) 
-#Preview {
-  Book()
-}
-#endif
 
 //
 //public func rank<Collection: RandomAccessCollection>(
