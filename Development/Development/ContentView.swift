@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import swift_ranking
+import Ranking
 
 struct ContentView: View {
   var body: some View {
@@ -22,7 +22,8 @@ struct ContentView: View {
 
   private struct Item: Rankable, Identifiable {
 
-    var id: String
+    var id: String = UUID().uuidString
+    var name: String
     var rank: Int
 
   }
@@ -40,7 +41,7 @@ struct ContentView: View {
               ForEach(items) { item in
                 HStack {
                   Text("\(item.rank)")
-                  Text(item.id)
+                  Text(item.name)
                 }
               }
               .onMove { set, index in
@@ -54,22 +55,19 @@ struct ContentView: View {
 
             }
             .environment(\.editMode, .constant(.active))
-            //        List {
-            //          ForEach(items, id: \.id) { item in
-            //            HStack {
-            //              Text("\(item.rank)")
-            //            }
-            //          }
-            //        }
           }
           Button("Add") {
             let number = count
             count += 1
-            Ranking.insert(element: .init(id: "\(number)", rank: 0), at: 0, in: &items)
+            Ranking.insert(element: .init(name: "\(number)", rank: 0), at: 0, in: &items)
           }
-          Button("Shuffle") {
-
+          
+          Button("Append") {
+            let number = count
+            count += 1
+            Ranking.append(element: .init(name: "\(count)", rank: 0), in: &items)
           }
+          
         }
         .onAppear {
 
@@ -113,8 +111,8 @@ struct ContentView: View {
     }
 
     private func moveRow(from source: IndexSet, to destination: Int) {
-      numbers.move(fromOffsets: source, toOffset: destination)
-    }
+      numbers.move(fromOffsets: source, toOffset: destination)   
+    }    
 
     private func removeRow(from source: IndexSet) {
       numbers.remove(atOffsets: source)
