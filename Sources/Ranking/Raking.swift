@@ -23,6 +23,24 @@ public enum Ranking {
     
   } 
   
+  public static func append<
+    Collection: RandomAccessCollection & RangeReplaceableCollection & MutableCollection
+  >(
+    element: Collection.Element,
+    in collection: inout Collection
+  ) where Collection.Element : Rankable, Collection.Index == Int {
+    
+    collection.sort { $0.rank < $1.rank }  
+    
+    uncheckedInsert(
+      element: element,
+      at: collection.endIndex,
+      in: &collection
+    )    
+    
+  }
+  
+  @discardableResult
   public static func remove<
     Collection: RandomAccessCollection & RangeReplaceableCollection & MutableCollection
   >(  
@@ -48,7 +66,11 @@ public enum Ranking {
   ) where Collection.Index == Int, Collection.Element : Rankable {
     
     let element = uncheckedRemove(at: fromIndex, in: &collection)
-    uncheckedInsert(element: element, at: toIndex, in: &collection)
+    if fromIndex < toIndex {
+      uncheckedInsert(element: element, at: toIndex - 1, in: &collection)
+    } else {
+      uncheckedInsert(element: element, at: toIndex, in: &collection)
+    }
     
   }
   
@@ -117,77 +139,3 @@ public enum Ranking {
     }
   }
 }
-
-//
-//public func rank<Collection: RandomAccessCollection>(
-//  newCollection: Collection,
-//  oldCollection: Collection
-//) where Collection.Element : Rankable {
-//  
-//  var oldOrder = oldCollection.sorted { $0.rank < $1.rank }
-//  
-//  let newOrder = newCollection.map({ newValueItem in
-//    oldOrder.first {
-//      $0 == newValueItem
-//    } ?? newValueItem
-//  })
-//  
-//  let differences = newOrder.difference(from: oldOrder)
-//  
-//  func completelyRearrangeArray() {
-//    let count = newOrder.count
-//    switch count {
-//    case 0:
-//      return
-//    case 1:
-//      newOrder[0].rank = 0
-//      return
-//    default:
-//      break
-//    }
-//    
-//    let offset = Int.min / 2
-//    let portion = Int.max / (count - 1)
-//    
-//    for index in 0 ..< count {
-//      newOrder[index].rank = offset + portion * index
-//    }
-//  }
-//  
-//  for difference in differences {
-//    switch difference {
-//    case .remove(let offset, let element, _):
-//      if !newOrder.contains(element) {
-//        modelContext.delete(element)
-//      }
-//      oldOrder.remove(at: offset)
-//    case .insert(let offset, let element, _):
-//      if oldOrder.isEmpty {
-//        element.rank = 0
-//        oldOrder.insert(element, at: offset)
-//        continue
-//      }
-//      
-//      var from = Int.min / 2
-//      var to = Int.max / 2
-//      
-//      if offset > 0 {
-//        from = oldOrder[offset - 1].order + 1
-//      }
-//      if offset < oldOrder.count {
-//        to = oldOrder[offset].rank
-//      }
-//      
-//      guard from < to else {
-//        completelyRearrangeArray()
-//        return
-//      }
-//      
-//      let range: Range<Int> = from ..< to
-//      element.rank = range.randomElement()!
-//      
-//      oldOrder.insert(element, at: offset)
-//    }
-//  }
-//  
-//}

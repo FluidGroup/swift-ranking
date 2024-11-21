@@ -9,17 +9,17 @@ let package = Package(
   products: [
     // Products define the executables and libraries a package produces, making them visible to other packages.
     .library(
-      name: "swift-ranking",
-      targets: ["swift-ranking"])
+      name: "Ranking",
+      targets: ["Ranking"])
   ],
   targets: [
     // Targets are the basic building blocks of a package, defining a module or a test suite.
     // Targets can depend on other targets in this package and products from dependencies.
     .target(
-      name: "swift-ranking"),
+      name: "Ranking"),
     .testTarget(
-      name: "swift-rankingTests",
-      dependencies: ["swift-ranking"]
+      name: "RankingTests",
+      dependencies: ["Ranking"]
     ),
   ]
 )
